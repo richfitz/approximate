@@ -1,9 +1,48 @@
+##' Approximate a function by a spline, refined to a given tolerance
+##'
+##' @title Approximate function with a spline
+##' @param target A function to approximate
+##'
+##' @param a The lower bound of the interpolation
+##'
+##' @param b The upper bound of the interpolation
+##'
+##' @param ... Additional arguments passed through to \code{target}
+##'
+##' @param method The method of interpolation to used; passed through
+##'   to \code{\link{splinefun}}
+##'
+##' @param n_base The number of equally spaced points to start with
+##'
+##' @param max_depth The number of times the base points will be
+##'   subdivided, at most.
+##'
+##' @param atol The absolute tolerance; used to determine how the
+##'   approximation is doing for values with small absolute value.
+##'
+##' @param rtol The relative tolerance' used to determine how the
+##'   approximation is doing for values with large absolute value.
+##'
+##' @param verbose Be verbose when fitting the spline?  This might be
+##'   useful on expensive functions.
+##'
+##' @param tol The default value for \code{atol} and \code{rtol}; use
+##'   this to set both at once.
+##'
+##' @param target_vectorised Flag indicating if \code{target} can
+##'   accept a vector of \code{x} values; the default, \code{TRUE},
+##'   assumes that it can.  If your function requires each \code{x}
+##'   value separately set this to \code{FALSE}.
+##'
+##' @export
+##' @author Rich FitzJohn
+##' @importFrom stats splinefun
 approximate <- function(target, a, b,
                         ...,
                         method = "fmm",
                         n_base = 17L, max_depth = 16L,
                         atol = tol, rtol = tol,
-                        verbose = TRUE,
+                        verbose = FALSE,
                         tol = sqrt(.Machine$double.eps),
                         target_vectorised = TRUE) {
   if (!is.finite(a) || !is.finite(b)) {
