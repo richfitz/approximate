@@ -6,7 +6,8 @@
 \usage{
 approximate(target, a, b, ..., method = "fmm", n_base = 17L,
   max_depth = 16L, atol = tol, rtol = tol, verbose = FALSE,
-  tol = sqrt(.Machine$double.eps), target_vectorised = TRUE)
+  tol = sqrt(.Machine$double.eps), target_vectorised = TRUE,
+  inverse = FALSE)
 }
 \arguments{
 \item{target}{A function to approximate}
@@ -41,6 +42,13 @@ this to set both at once.}
 accept a vector of \code{x} values; the default, \code{TRUE},
 assumes that it can.  If your function requires each \code{x}
 value separately set this to \code{FALSE}.}
+
+\item{inverse}{Indicates if the \emph{inverse} approximate
+function is required.  This is useful if you can use
+\code{target} to map x to y but you want the inverse mapping
+back.  \code{a} and \code{b} will be the domain of \code{x}
+still (so the range of \code{y}, and the domain of the returned
+function).}
 }
 \description{
 Approximate a function by a spline, refined to a given tolerance

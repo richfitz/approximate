@@ -54,3 +54,12 @@ test_that("error cases", {
   expect_error(approximate(target, 0, 1, max_depth = 3),
                "function is as refined")
 })
+
+test_that("inverse", {
+  f <- function(x) x * x
+  g <- approximate(f, 0, 5, inverse = TRUE, verbose = TRUE,
+                   atol = 1e-4, rtol = 1e-4)
+  xx <- seq(0, f(5), length.out = 101)
+  yy <- g(xx)
+  expect_lt(max(abs(yy - sqrt(xx))), 1e-5)
+})

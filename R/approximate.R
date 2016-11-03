@@ -34,6 +34,13 @@
 ##'   assumes that it can.  If your function requires each \code{x}
 ##'   value separately set this to \code{FALSE}.
 ##'
+##' @param inverse Indicates if the \emph{inverse} approximate
+##'   function is required.  This is useful if you can use
+##'   \code{target} to map x to y but you want the inverse mapping
+##'   back.  \code{a} and \code{b} will be the domain of \code{x}
+##'   still (so the range of \code{y}, and the domain of the returned
+##'   function).
+##'
 ##' @export
 ##' @author Rich FitzJohn
 ##' @importFrom stats splinefun
@@ -44,7 +51,7 @@ approximate <- function(target, a, b,
                         atol = tol, rtol = tol,
                         verbose = FALSE,
                         tol = sqrt(.Machine$double.eps),
-                        target_vectorised = TRUE) {
+                        target_vectorised = TRUE, inverse = FALSE) {
   if (!is.finite(a) || !is.finite(b)) {
     stop("Bounds must be finite and non-missing")
   }
@@ -61,12 +68,20 @@ approximate <- function(target, a, b,
   dx <- (b - a) / (n_base - 1)
   dx_min <- dx / (2^max_depth)
 
+  make_spline <- function(x, y) {
+    if (inverse) {
+      spline <- splinefun(yy, xx, method = method)
+    } else {
+      spline <- splinefun(xx, yy, method = method)
+    }
+  }
+
   ## Kick off:
   xx <- seq(a, b, length.out = n_base)
-  yy <- target(xx)
+  yy <- target(xx, ...)
   zz <- rep(c(FALSE, TRUE), c(1, n_base - 1L))
 
-  spline <- splinefun(xx, yy, method = method)
+  spline <- make_spline(xx, yy)
 
   while (any(zz)) {
     if (verbose) {
@@ -78,15 +93,15 @@ approximate <- function(target, a, b,
     }
 
     x_mid <- xx[zz] - dx
-    y_mid <- target(x_mid)
-    p_mid <- spline(x_mid)
+    y_mid <- target(x_mid, ...)
 
-    ## plot(xx, yy)
-    ## points(x_mid, y_mid, col="red")
-    ## points(x_mid, p_mid, pch=19, cex = .5)
-    ## segments(x_mid, y_mid, x_mid, p_mid, col="grey")
-
-    z_mid <- !check_err(y_mid, p_mid, atol, rtol)
+    if (inverse) {
+      p_mid <- spline(y_mid)
+      z_mid <- !check_err(x_mid, p_mid, atol, rtol)
+    } else {
+      p_mid <- spline(x_mid)
+      z_mid <- !check_err(y_mid, p_mid, atol, rtol)
+    }
     zz[zz] <- z_mid
 
     ## Might be worth working out what order this should be in here;
@@ -95,7 +110,7 @@ approximate <- function(target, a, b,
     yy <- c(yy, y_mid)
     zz <- c(zz, z_mid)
 
-    spline <- splinefun(xx, yy, method = method)
+    spline <- make_spline(xx, yy)
   }
 
   spline
