@@ -8,3 +8,4 @@ License: MIT + file LICENSE
 Suggests:
     testthat
 RoxygenNote: 5.0.1
+Encoding: UTF-8
